@@ -60,29 +60,23 @@ const JobStatusPieChart: React.FC<Props> = ({ jobs }) => {
                     cy="50%"
                     outerRadius="80%"
                     labelLine={false}
-                    label={({
-                        cx,
-                        cy,
-                        midAngle,
-                        innerRadius,
-                        outerRadius,
-                        value,
-                        name
-                    }: {
-                        cx: number;
-                        cy: number;
-                        midAngle: number;
-                        innerRadius: number;
-                        outerRadius: number;
-                        value: number;
-                        name: string;
-                    }) => {
+                    label={(props) => {
+                        // PieLabelRenderProps type from recharts
+                        const {
+                            cx = 0,
+                            cy = 0,
+                            midAngle = 0,
+                            innerRadius = 0,
+                            outerRadius = 0,
+                            value = 0,
+                            name = ''
+                        } = props as any;
                         const RADIAN = Math.PI / 180;
                         const radius = 25 + innerRadius + (outerRadius - innerRadius);
                         const x = cx + radius * Math.cos(-midAngle * RADIAN);
                         const y = cy + radius * Math.sin(-midAngle * RADIAN);
-                        const percent = ((value / total) * 100).toFixed(0);
-                        if (value === 0) return null;
+                        const percent = total > 0 ? ((value / total) * 100).toFixed(0) : '0';
+                        if (!value) return null;
                         return (
                             <text
                                 x={x}

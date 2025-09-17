@@ -1,6 +1,14 @@
+using Microsoft.EntityFrameworkCore;
+using HireWire.Server.Data;
+
 var builder = WebApplication.CreateBuilder(args);
 
+// Get connection string from configuration
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+
 // Add services to the container.
+builder.Services.AddDbContext<ApplicationDbContext>(options =>
+    options.UseSqlServer(connectionString));
 
 builder.Services.AddControllers();
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
