@@ -1,0 +1,29 @@
+services:
+  backend:
+    build:
+      context: ./HireWire.Server
+    ports:
+      - "5035:5035"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+    depends_on:
+      - db
+
+  frontend:
+    build:
+      context: ./hirewire.client
+    ports:
+      - "5173:80"
+
+  db:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    environment:
+      SA_PASSWORD: "YourStrong!Passw0rd"
+      ACCEPT_EULA: "Y"
+    ports:
+      - "1433:1433"
+    volumes:
+      - mssql-data:/var/opt/mssql
+
+volumes:
+  mssql-data:
