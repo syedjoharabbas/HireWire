@@ -1,1 +1,9 @@
-// removed; using postcss.config.cjs (CommonJS) for PostCSS configuration in build environments
+import tailwindcss from 'tailwindcss'
+import autoprefixer from 'autoprefixer'
+
+export default {
+    plugins: [
+        tailwindcss,
+        autoprefixer
+    ]
+}
