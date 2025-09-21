@@ -1,15 +1,51 @@
 import { Job, JobStatus } from '../types/Job';
 
-const API_BASE = "http://localhost:5035/api/jobs"; // your backend
+const API_BASE = "http://localhost:5035/api";
+const AUTH_BASE = `${API_BASE}/authentication`;
+const JOBS_BASE = `${API_BASE}/jobs`;
 
-// Get all jobs
-export const getJobs = async (): Promise<Job[]> => {
-    const res = await fetch(API_BASE);
-    if (!res.ok) throw new Error("Failed to fetch jobs");
+// ---------------------- Authentication ----------------------
+export const registerUser = async (username: string, password: string): Promise<void> => {
+    const res = await fetch(`${AUTH_BASE}/register`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username, password }),
+    });
+    if (!res.ok) throw new Error(await res.text());
+};
+
+export const loginUser = async (username: string, password: string): Promise<string> => {
+    const res = await fetch(`${AUTH_BASE}/login`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username, password }),
+    });
+    if (!res.ok) throw new Error(await res.text());
+
+    const { token } = await res.json();
+    localStorage.setItem("jwt", token); // store token
+    return token;
+};
+
+// ---------------------- Fetch Wrapper with JWT ----------------------
+const authFetch = async (url: string, options: RequestInit = {}) => {
+    const token = localStorage.getItem("jwt");
+    const headers = {
+        "Content-Type": "application/json",
+        ...(options.headers || {}),
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    };
+    const res = await fetch(url, { ...options, headers });
+    if (!res.ok) {
+        const error = await res.json().catch(() => ({}));
+        throw new Error(error.message || "Request failed");
+    }
     return res.json();
 };
 
-// Add new job
+// ---------------------- Jobs Service ----------------------
+export const getJobs = async (): Promise<Job[]> => authFetch(JOBS_BASE);
+
 export const addJob = async (job: Omit<Job, 'id' | 'lastUpdated'>): Promise<Job> => {
     const payload = {
         ...job,
@@ -17,48 +53,16 @@ export const addJob = async (job: Omit<Job, 'id' | 'lastUpdated'>): Promise<Job>
         dateApplied: job.dateApplied || new Date().toISOString(),
         lastUpdated: new Date().toISOString(),
     };
-
-    const res = await fetch(API_BASE, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload), // IMPORTANT: top-level object
-    });
-
-    if (!res.ok) {
-        const error = await res.json().catch(() => ({}));
-        console.error("Backend error:", error);
-        throw new Error("Failed to create job");
-    }
-
-    return res.json();
+    return authFetch(JOBS_BASE, { method: "POST", body: JSON.stringify(payload) });
 };
 
-
-
-// Update job
 export const updateJob = async (id: number, updates: Partial<Job>): Promise<Job> => {
-    const res = await fetch(`${API_BASE}/${id}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...updates, id }),
-    });
-    if (!res.ok) throw new Error("Failed to update job");
-    return res.json();
+    return authFetch(`${JOBS_BASE}/${id}`, { method: "PUT", body: JSON.stringify({ ...updates, id }) });
 };
 
-// Get job stats
 export const getJobStats = async (): Promise<Record<JobStatus, number>> => {
-    const res = await fetch(`${API_BASE}/stats`);
-    if (!res.ok) throw new Error("Failed to fetch stats");
-    const data = await res.json();
-
-    // Convert from { status, count }[] into { Applied, Interview, Offer, Rejected }
-    const stats: Record<JobStatus, number> = {
-        Applied: 0,
-        Interview: 0,
-        Offer: 0,
-        Rejected: 0,
-    };
+    const data = await authFetch(`${JOBS_BASE}/stats`);
+    const stats: Record<JobStatus, number> = { Applied: 0, Interview: 0, Offer: 0, Rejected: 0 };
     data.statusBreakdown.forEach((item: { status: JobStatus; count: number }) => {
         stats[item.status] = item.count;
     });
