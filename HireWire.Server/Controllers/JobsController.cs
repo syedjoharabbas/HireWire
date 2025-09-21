@@ -2,7 +2,6 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using HireWire.Server.Data;
 using HireWire.Server.Models;
-using System.Linq;
 
 namespace HireWire.Server.Controllers
 {
@@ -24,17 +23,15 @@ namespace HireWire.Server.Controllers
             return await _context.Jobs.ToListAsync();
         }
 
-        // GET: api/jobs/5
+        // GET: api/jobs/{id}
         [HttpGet("{id}")]
         public async Task<ActionResult<Job>> GetJob(int id)
         {
             var job = await _context.Jobs.FindAsync(id);
-
             if (job == null)
             {
                 return NotFound();
             }
-
             return job;
         }
 
@@ -49,7 +46,7 @@ namespace HireWire.Server.Controllers
             return CreatedAtAction(nameof(GetJob), new { id = job.Id }, job);
         }
 
-        // PUT: api/jobs/5
+        // PUT: api/jobs/{id}
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdateJob(int id, Job job)
         {
@@ -58,8 +55,25 @@ namespace HireWire.Server.Controllers
                 return BadRequest();
             }
 
-            job.LastUpdated = DateTime.UtcNow;
-            _context.Entry(job).State = EntityState.Modified;
+            var existingJob = await _context.Jobs.FindAsync(id);
+            if (existingJob == null)
+            {
+                return NotFound();
+            }
+
+            existingJob.Title = job.Title;
+            existingJob.Company = job.Company;
+            existingJob.Location = job.Location;
+            existingJob.Status = job.Status;
+            existingJob.DateApplied = job.DateApplied;
+            existingJob.Salary = job.Salary;
+            existingJob.Notes = job.Notes;
+            existingJob.ContactName = job.ContactName;
+            existingJob.ContactEmail = job.ContactEmail;
+            existingJob.NextSteps = job.NextSteps;
+            existingJob.LastUpdated = DateTime.UtcNow;
+
+            _context.Entry(existingJob).State = EntityState.Modified;
 
             try
             {
@@ -71,13 +85,16 @@ namespace HireWire.Server.Controllers
                 {
                     return NotFound();
                 }
-                throw;
+                else
+                {
+                    throw;
+                }
             }
 
             return NoContent();
         }
 
-        // DELETE: api/jobs/5
+        // DELETE: api/jobs/{id}
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteJob(int id)
         {
@@ -97,21 +114,12 @@ namespace HireWire.Server.Controllers
         [HttpGet("stats")]
         public async Task<ActionResult<object>> GetJobStats()
         {
-            var stats = new
-            {
-                TotalJobs = await _context.Jobs.CountAsync(),
-                StatusBreakdown = await _context.Jobs
-                    .GroupBy(j => j.Status)
-                    .Select(g => new { Status = g.Key, Count = g.Count() })
-                    .ToListAsync(),
-                RecentApplications = await _context.Jobs
-                    .OrderByDescending(j => j.DateApplied)
-                    .Take(5)
-                    .Select(j => new { j.Title, j.Company, j.DateApplied })
-                    .ToListAsync()
-            };
+            var stats = await _context.Jobs
+                .GroupBy(j => j.Status)
+                .Select(g => new { status = g.Key, count = g.Count() })
+                .ToListAsync();
 
-            return stats;
+            return Ok(new { statusBreakdown = stats });
         }
 
         private bool JobExists(int id)
