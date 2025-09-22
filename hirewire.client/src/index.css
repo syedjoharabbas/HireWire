@@ -12,16 +12,35 @@
   .btn {
     @apply px-4 py-2 rounded-lg font-medium transition-colors;
   }
+
   .btn-primary {
     @apply bg-primary-600 text-white hover:bg-primary-700;
   }
+
   .btn-secondary {
     @apply bg-gray-200 text-gray-800 hover:bg-gray-300;
   }
+
   .input {
     @apply w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500;
   }
+
   .card {
     @apply bg-white rounded-xl shadow-sm p-6;
   }
 }
+
+/* Small visual overrides to match previous pre-Tailwind appearance */
+html, body {
+  font-size: 16px;
+}
+
+/* Constrain SVG icon sizes (heroicons) to reasonable defaults) */
+svg {
+  width: 1rem;
+  height: 1rem;
+}
+
+/* Utility: ensure icons used with Tailwind sizing still display correctly */
+.w-4 { width: 1rem !important; }
+.h-4 { height: 1rem !important; }

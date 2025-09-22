@@ -6,24 +6,11 @@ services:
       - "5035:5035"
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
-    depends_on:
-      - db
+      - ASPNETCORE_URLS=http://+:5035
+      - ConnectionStrings__DefaultConnection=Data Source=host.docker.internal,1433;Initial Catalog=HireWire;Persist Security Info=True;User ID=SA;Password=Docker@2025;Pooling=False;MultipleActiveResultSets=False;Encrypt=False;TrustServerCertificate=True;Command Timeout=30
 
   frontend:
     build:
       context: ./hirewire.client
     ports:
       - "5173:80"
-
-  db:
-    image: mcr.microsoft.com/mssql/server:2022-latest
-    environment:
-      SA_PASSWORD: "YourStrong!Passw0rd"
-      ACCEPT_EULA: "Y"
-    ports:
-      - "1433:1433"
-    volumes:
-      - mssql-data:/var/opt/mssql
-
-volumes:
-  mssql-data:
