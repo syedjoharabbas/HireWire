@@ -361,3 +361,22 @@ MigrationBackup/
 
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
+
+# Ignore uploaded resumes and user-uploaded files
+/HireWire.Server/wwwroot/uploads/
+**/wwwroot/uploads/
+/uploads/
+
+# Ignore common uploaded file types
+*.pdf
+*.doc
+*.docx
+*.ppt
+*.pptx
+*.xls
+*.xlsx
+*.zip
+*.rar
+*.7z
+*.tar.gz
+*.tgz
