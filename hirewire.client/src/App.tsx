@@ -1,5 +1,5 @@
 import React from 'react';
-import { Routes, Route, Link, useLocation, useNavigate } from 'react-router-dom';
+import { Routes, Route, Link, useLocation, useNavigate, Navigate } from 'react-router-dom';
 import { HomeIcon, BriefcaseIcon, PlusIcon } from '@heroicons/react/24/outline';
 import Dashboard from './pages/Dashboard';
 import JobList from './pages/JobList';
@@ -121,8 +121,8 @@ function App() {
 
             <main className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8">
                 <Routes>
-                    <Route path="/login" element={<Login />} />
-                    <Route path="/signup" element={<Signup />} />
+                    <Route path="/login" element={isAuthenticated ? <Navigate to="/" replace /> : <Login />} />
+                    <Route path="/signup" element={isAuthenticated ? <Navigate to="/" replace /> : <Signup />} />
 
                     <Route path="/" element={<PrivateRoute><Dashboard /></PrivateRoute>} />
                     <Route path="/jobs" element={<PrivateRoute><JobList /></PrivateRoute>} />
