@@ -128,6 +128,3 @@ Future improvements / roadmap
 
 License
 MIT
-
----
-If you want, I can also add a short API reference (sample requests) and screenshots of the new UI, or open a PR with the updated README. Which would you prefer?
