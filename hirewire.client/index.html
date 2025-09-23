@@ -5,6 +5,27 @@
     <link rel="icon" type="image/svg+xml" href="/vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>HireWire - Job Application Tracker</title>
+    <script>
+      // Initialize theme early to avoid flash — set .dark on <html> if user chose dark or system prefers dark
+      (function() {
+        try {
+          const stored = localStorage.getItem('theme');
+          if (stored === 'dark') {
+            document.documentElement.classList.add('dark');
+            return;
+          }
+          if (stored === 'light') {
+            document.documentElement.classList.remove('dark');
+            return;
+          }
+          if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+            document.documentElement.classList.add('dark');
+          }
+        } catch (e) {
+          // ignore
+        }
+      })();
+    </script>
   </head>
   <body>
     <div id="root"></div>

@@ -98,6 +98,7 @@ namespace HireWire.Server.Controllers
 
         // DELETE: api/jobs/{id}
         [HttpDelete("{id}")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> DeleteJob(int id)
         {
             var job = await _context.Jobs.FindAsync(id);
