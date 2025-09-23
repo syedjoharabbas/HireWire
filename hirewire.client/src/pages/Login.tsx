@@ -15,8 +15,12 @@ const Login: React.FC = () => {
     setError('');
 
     try {
-      const { token, role } = await loginUser(username, password);
-      login(token, role || 'User');
+      const result = await loginUser(username, password);
+      const token = (result as any)?.token ?? result; // support older return shapes
+      const role = (result as any)?.role ?? null;
+      const id = (result as any)?.id ?? null;
+
+      login(token, role || 'User', id);
       navigate('/');
     } catch (err) {
       setError('Invalid username or password');

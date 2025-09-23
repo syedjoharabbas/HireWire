@@ -41,6 +41,16 @@ public class Job
 
     [Required]
     public DateTime LastUpdated { get; set; }
+
+    // Owner of the job (User.Id)
+    public int OwnerId { get; set; }
+
+    // Optional: store owner's username for quick display
+    public string? OwnerUsername { get; set; }
+
+    // Linked candidate
+    public int? CandidateId { get; set; }
+    public string? CandidateName { get; set; }
 }
 
 public enum JobStatus

@@ -57,7 +57,7 @@ namespace HireWire.Server.Controllers
 
             string token = CreateToken(user);
 
-            return Ok(new { token, role = user.Role });
+            return Ok(new { token, role = user.Role, id = user.Id });
         }
 
         [HttpGet("me")]
@@ -69,7 +69,7 @@ namespace HireWire.Server.Controllers
             var user = await _context.Users.FirstOrDefaultAsync(u => u.Username == username);
             if (user == null) return NotFound();
 
-            return Ok(new { user.Username, user.Role });
+            return Ok(new { user.Id, user.Username, user.Role });
         }
 
         private string CreateToken(User user)
@@ -77,6 +77,7 @@ namespace HireWire.Server.Controllers
             var claims = new List<Claim>
             {
                 new Claim(ClaimTypes.Name, user.Username),
+                new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
                 new Claim(ClaimTypes.Role, user.Role)
             };
 

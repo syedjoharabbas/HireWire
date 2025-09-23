@@ -13,5 +13,7 @@ export interface Job {
     contactEmail?: string;
     nextSteps?: string;
     lastUpdated: string;
+    candidateId?: number | null;
+    candidateName?: string | null;
 }
 

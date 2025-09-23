@@ -7,6 +7,7 @@ import AddJob from './pages/AddJob';
 import Login from './pages/Login';
 import Signup from './pages/Signup';
 import Admin from './pages/Admin';
+import Candidates from './pages/Candidates';
 import PrivateRoute from './components/PrivateRoute';
 import { useAuth } from './context/AuthContext';
 import ThemeToggle from './components/ThemeToggle';
@@ -69,6 +70,13 @@ function App() {
                                             <PlusIcon className="w-4 h-4 mr-2" />
                                             Add Job
                                         </Link>
+                                        <Link to="/candidates" className={`flex items-center px-3 py-2 rounded-md text-sm font-medium ${
+                                            location.pathname === '/candidates'
+                                                ? 'bg-primary-100 text-primary-700'
+                                                : 'text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700'
+                                        }`}>
+                                            Candidates
+                                        </Link>
                                         {role === 'Admin' && (
                                             <Link to="/admin" className="flex items-center px-3 py-2 rounded-md text-sm font-medium text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700">Admin</Link>
                                         )}
@@ -119,6 +127,7 @@ function App() {
                     <Route path="/" element={<PrivateRoute><Dashboard /></PrivateRoute>} />
                     <Route path="/jobs" element={<PrivateRoute><JobList /></PrivateRoute>} />
                     <Route path="/add-job" element={<PrivateRoute><AddJob /></PrivateRoute>} />
+                    <Route path="/candidates" element={<PrivateRoute><Candidates /></PrivateRoute>} />
                     <Route path="/admin" element={<PrivateRoute requiredRole="Admin"><Admin /></PrivateRoute>} />
                 </Routes>
             </main>

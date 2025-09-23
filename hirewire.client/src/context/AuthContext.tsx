@@ -3,9 +3,11 @@ import React, { createContext, useContext, useState, ReactNode, useEffect } from
 interface AuthContextType {
   token: string | null;
   role: string | null;
-  login: (token: string, role: string | null) => void;
+  userId: number | null;
+  login: (token: string, role: string | null, userId: number | null) => void;
   logout: () => void;
   isAuthenticated: boolean;
+  isAdmin: boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -17,6 +19,11 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
   const [role, setRole] = useState<string | null>(() => {
     return localStorage.getItem('role');
+  });
+
+  const [userId, setUserId] = useState<number | null>(() => {
+    const v = localStorage.getItem('userId');
+    return v ? parseInt(v, 10) : null;
   });
 
   useEffect(() => {
@@ -35,20 +42,31 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     }
   }, [role]);
 
-  const login = (newToken: string, newRole: string | null) => {
+  useEffect(() => {
+    if (userId !== null && userId !== undefined) {
+      localStorage.setItem('userId', String(userId));
+    } else {
+      localStorage.removeItem('userId');
+    }
+  }, [userId]);
+
+  const login = (newToken: string, newRole: string | null, newUserId: number | null) => {
     setToken(newToken);
     setRole(newRole);
+    setUserId(newUserId);
   };
 
   const logout = () => {
     setToken(null);
     setRole(null);
+    setUserId(null);
   };
 
   const isAuthenticated = !!token;
+  const isAdmin = role === 'Admin';
 
   return (
-    <AuthContext.Provider value={{ token, role, login, logout, isAuthenticated }}>
+    <AuthContext.Provider value={{ token, role, userId, login, logout, isAuthenticated, isAdmin }}>
       {children}
     </AuthContext.Provider>
   );
