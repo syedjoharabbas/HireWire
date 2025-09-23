@@ -58,6 +58,35 @@ builder.Services.AddOpenApi();
 
 var app = builder.Build();
 
+// Seed initial admin user if configured
+using (var scope = app.Services.CreateScope())
+{
+    var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+    // Ensure database is created
+    db.Database.EnsureCreated();
+
+    var adminUsername = builder.Configuration["Admin:Username"] ?? "admin";
+    var adminPassword = builder.Configuration["Admin:Password"] ?? "admin123";
+
+    if (!db.Users.Any(u => u.Username == adminUsername))
+    {
+        // create password hash
+        using var hmac = new System.Security.Cryptography.HMACSHA512();
+        var salt = hmac.Key;
+        var hash = hmac.ComputeHash(Encoding.UTF8.GetBytes(adminPassword));
+
+        db.Users.Add(new HireWire.Server.Models.User
+        {
+            Username = adminUsername,
+            PasswordHash = hash,
+            PasswordSalt = salt,
+            Role = "Admin"
+        });
+
+        db.SaveChanges();
+    }
+}
+
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {

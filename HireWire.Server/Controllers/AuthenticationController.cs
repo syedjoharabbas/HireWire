@@ -35,7 +35,8 @@ namespace HireWire.Server.Controllers
             {
                 Username = request.Username,
                 PasswordHash = passwordHash,
-                PasswordSalt = passwordSalt
+                PasswordSalt = passwordSalt,
+                Role = string.IsNullOrWhiteSpace(request.Role) ? "User" : request.Role
             };
 
             _context.Users.Add(user);
@@ -56,14 +57,27 @@ namespace HireWire.Server.Controllers
 
             string token = CreateToken(user);
 
-            return Ok(new { token });
+            return Ok(new { token, role = user.Role });
+        }
+
+        [HttpGet("me")]
+        public async Task<IActionResult> Me()
+        {
+            var username = User?.Identity?.Name;
+            if (string.IsNullOrEmpty(username)) return Unauthorized();
+
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.Username == username);
+            if (user == null) return NotFound();
+
+            return Ok(new { user.Username, user.Role });
         }
 
         private string CreateToken(User user)
         {
             var claims = new List<Claim>
             {
-                new Claim(ClaimTypes.Name, user.Username)
+                new Claim(ClaimTypes.Name, user.Username),
+                new Claim(ClaimTypes.Role, user.Role)
             };
 
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Secret"] ?? "YourSuperSecretKeyHere"));
@@ -101,5 +115,6 @@ namespace HireWire.Server.Controllers
     {
         public string Username { get; set; } = string.Empty;
         public string Password { get; set; } = string.Empty;
+        public string? Role { get; set; }
     }
 }
