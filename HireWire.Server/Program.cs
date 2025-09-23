@@ -62,8 +62,8 @@ var app = builder.Build();
 using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-    // Ensure database is created
-    db.Database.EnsureCreated();
+    // Use migrations to ensure database schema is up-to-date
+    db.Database.Migrate();
 
     var adminUsername = builder.Configuration["Admin:Username"] ?? "admin";
     var adminPassword = builder.Configuration["Admin:Password"] ?? "admin123";

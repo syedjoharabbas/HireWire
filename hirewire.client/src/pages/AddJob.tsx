@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { addJob } from '../services/JobService';
+import { getCandidates } from '../services/CandidateService';
 import { useNavigate } from 'react-router-dom';
 import { JobStatus } from '../types/Job';
 
@@ -15,15 +16,24 @@ const AddJob: React.FC = () => {
         contactName: '',
         contactEmail: '',
         nextSteps: '',
-        dateApplied: new Date().toISOString().split('T')[0]
+        dateApplied: new Date().toISOString().split('T')[0],
+        candidateId: undefined as number | undefined
     });
+
+    const [candidates, setCandidates] = useState<Array<any>>([]);
+
+    useEffect(() => {
+        (async () => {
+            try {
+                const data = await getCandidates();
+                setCandidates(data || []);
+            } catch (e) {}
+        })();
+    }, []);
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
         const { name, value } = e.target;
-        setFormData(prev => ({
-            ...prev,
-            [name]: value
-        }));
+        setFormData(prev => ({ ...prev, [name]: value }));
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -32,7 +42,7 @@ const AddJob: React.FC = () => {
             ...formData,
             lastUpdated: new Date().toISOString().split('T')[0]
         };
-        await addJob(jobData);
+        await addJob(jobData as any);
         navigate('/jobs');
     };
 
@@ -110,6 +120,14 @@ const AddJob: React.FC = () => {
                                 <option value="Interview">Interview</option>
                                 <option value="Offer">Offer</option>
                                 <option value="Rejected">Rejected</option>
+                            </select>
+                        </div>
+
+                        <div className="sm:col-span-6">
+                            <label htmlFor="candidateId" className="block text-sm font-medium leading-6 text-gray-900">Candidate (optional)</label>
+                            <select name="candidateId" id="candidateId" value={formData.candidateId ?? ''} onChange={handleChange} className="mt-2 block w-full rounded-md border-0 py-1.5 px-3 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300">
+                                <option value="">-- Select candidate --</option>
+                                {candidates.map(c => <option key={c.id} value={c.id}>{c.fullName}</option>)}
                             </select>
                         </div>
 

@@ -15,7 +15,7 @@ export const registerUser = async (username: string, password: string, role?: st
   if (!res.ok) throw new Error(await res.text());
 };
 
-export const loginUser = async (username: string, password: string): Promise<{ token: string; role: string | null }> => {
+export const loginUser = async (username: string, password: string): Promise<{ token: string; role: string | null; id: number | null }> => {
   const res = await fetch(`${AUTH_BASE}/login`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -26,13 +26,14 @@ export const loginUser = async (username: string, password: string): Promise<{ t
   const data = await res.json();
   const token = data.token as string;
   const role = data.role as string | null;
+  const id = data.id as number | null;
 
-  // persist token and role for AuthContext
+  // persist token, role and userId for AuthContext
   localStorage.setItem("token", token);
-  if (role) localStorage.setItem("role", role);
-  else localStorage.removeItem("role");
+  if (role) localStorage.setItem("role", role); else localStorage.removeItem("role");
+  if (id !== null && id !== undefined) localStorage.setItem("userId", String(id)); else localStorage.removeItem("userId");
 
-  return { token, role };
+  return { token, role, id };
 };
 
 // ---------------------- Fetch Wrapper with JWT ----------------------
@@ -47,7 +48,6 @@ const authFetch = async (url: string, options: RequestInit = {}) => {
   const res = await fetch(url, { ...options, headers });
 
   if (!res.ok) {
-    // try to parse JSON error body, fallback to text
     const text = await res.text().catch(() => "");
     try {
       const json = text ? JSON.parse(text) : null;
@@ -57,10 +57,8 @@ const authFetch = async (url: string, options: RequestInit = {}) => {
     }
   }
 
-  // No content
   if (res.status === 204) return null;
 
-  // Try parsing JSON, otherwise return null
   const contentType = res.headers.get('content-type') || '';
   if (contentType.includes('application/json')) {
     return res.json();
