@@ -112,20 +112,20 @@ const JobTable: React.FC<Props> = ({ jobs, onUpdateStatus, isAdmin, onDelete }) 
         <table className="min-w-full divide-y divide-gray-300" role="table" aria-label="Job table">
           <thead className="bg-gray-50">
             <tr>
-              <th scope="col" role="columnheader" aria-sort={sortField === 'title' ? sortDirection : 'none'} className="px-6 py-3 text-left text-sm font-semibold text-gray-900 cursor-pointer" onClick={() => handleSort('title')}>
+              <th scope="col" role="columnheader" aria-sort={sortField === 'title' ? (sortDirection === 'asc' ? 'ascending' : 'descending') : 'none'} className="px-6 py-3 text-left text-sm font-semibold text-gray-900 cursor-pointer" onClick={() => handleSort('title')}>
                 Title {getSortIcon('title')}
               </th>
-              <th scope="col" role="columnheader" aria-sort={sortField === 'company' ? sortDirection : 'none'} className="px-6 py-3 text-left text-sm font-semibold text-gray-900 cursor-pointer" onClick={() => handleSort('company')}>
+              <th scope="col" role="columnheader" aria-sort={sortField === 'company' ? (sortDirection === 'asc' ? 'ascending' : 'descending') : 'none'} className="px-6 py-3 text-left text-sm font-semibold text-gray-900 cursor-pointer" onClick={() => handleSort('company')}>
                 Company {getSortIcon('company')}
               </th>
-              <th scope="col" role="columnheader" aria-sort={sortField === 'location' ? sortDirection : 'none'} className="px-6 py-3 text-left text-sm font-semibold text-gray-900 cursor-pointer" onClick={() => handleSort('location')}>
+              <th scope="col" role="columnheader" aria-sort={sortField === 'location' ? (sortDirection === 'asc' ? 'ascending' : 'descending') : 'none'} className="px-6 py-3 text-left text-sm font-semibold text-gray-900 cursor-pointer" onClick={() => handleSort('location')}>
                 Location {getSortIcon('location')}
               </th>
               <th scope="col" role="columnheader" className="px-6 py-3 text-left text-sm font-semibold text-gray-900">Candidate</th>
-              <th scope="col" role="columnheader" aria-sort={sortField === 'dateApplied' ? sortDirection : 'none'} className="px-6 py-3 text-left text-sm font-semibold text-gray-900 cursor-pointer" onClick={() => handleSort('dateApplied')}>
+              <th scope="col" role="columnheader" aria-sort={sortField === 'dateApplied' ? (sortDirection === 'asc' ? 'ascending' : 'descending') : 'none'} className="px-6 py-3 text-left text-sm font-semibold text-gray-900 cursor-pointer" onClick={() => handleSort('dateApplied')}>
                 Applied {getSortIcon('dateApplied')}
               </th>
-              <th scope="col" role="columnheader" aria-sort={sortField === 'status' ? sortDirection : 'none'} className="px-6 py-3 text-left text-sm font-semibold text-gray-900 cursor-pointer" onClick={() => handleSort('status')}>
+              <th scope="col" role="columnheader" aria-sort={sortField === 'status' ? (sortDirection === 'asc' ? 'ascending' : 'descending') : 'none'} className="px-6 py-3 text-left text-sm font-semibold text-gray-900 cursor-pointer" onClick={() => handleSort('status')}>
                 Status {getSortIcon('status')}
               </th>
               {(isAdmin || onDelete) && <th scope="col" role="columnheader" className="px-6 py-3 text-left text-sm font-semibold text-gray-900">Actions</th>}
