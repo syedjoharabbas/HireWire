@@ -60,6 +60,33 @@
 
 /* Accessibility helpers */
 :focus { outline: 3px solid rgba(99,102,241,0.18); outline-offset: 2px; }
+:focus-visible {
+  outline: 3px solid rgba(99,102,241,0.24);
+  outline-offset: 3px;
+}
+
+/* Respect prefers-reduced-motion */
+@media (prefers-reduced-motion: reduce) {
+  .animate-floaty,
+  .animate-fade-in-up,
+  .hover-glow,
+  .lux-card:hover,
+  .lux-btn:hover {
+    animation: none !important;
+    transition: none !important;
+  }
+}
+
+/* Micro interactions */
+.lux-card { transition: transform 240ms cubic-bezier(.2,.8,.2,1), box-shadow 240ms ease; }
+.lux-card:hover { transform: translateY(-6px); }
+.lux-btn { transition: transform 160ms ease, box-shadow 160ms ease; }
+.lux-btn:active { transform: translateY(1px) scale(0.995); }
+
+/* Improve focus styles for interactive elements */
+button:focus, a:focus, input:focus, select:focus, textarea:focus {
+  box-shadow: 0 0 0 3px rgba(99,102,241,0.12);
+}
 
 @layer base {
   html.dark body {

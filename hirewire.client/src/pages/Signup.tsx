@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { registerUser } from '../services/JobService';
 import { useAuth } from '../context/AuthContext';
+import { Input } from '../components/FormControls';
+import { useToast } from '../components/Toast';
 
 const Signup: React.FC = () => {
   const [username, setUsername] = useState('');
@@ -9,6 +11,7 @@ const Signup: React.FC = () => {
   const [error, setError] = useState('');
   const navigate = useNavigate();
   const { isAuthenticated } = useAuth();
+  const toast = useToast();
 
   useEffect(() => {
     if (isAuthenticated) navigate('/');
@@ -20,9 +23,11 @@ const Signup: React.FC = () => {
 
     try {
       await registerUser(username, password);
+      toast.push('Account created', 'success');
       navigate('/login');
     } catch (err) {
       setError('Registration failed');
+      toast.push('Registration failed', 'error');
     }
   };
 
@@ -33,27 +38,25 @@ const Signup: React.FC = () => {
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
           <label htmlFor="username" className="block mb-1">Username</label>
-          <input
+          <Input
             type="text"
             id="username"
             value={username}
             onChange={(e) => setUsername(e.target.value)}
-            className="w-full border border-gray-300 rounded px-3 py-2"
             required
           />
         </div>
         <div>
           <label htmlFor="password" className="block mb-1">Password</label>
-          <input
+          <Input
             type="password"
             id="password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            className="w-full border border-gray-300 rounded px-3 py-2"
             required
           />
         </div>
-        <button type="submit" className="btn btn-primary w-full">Sign Up</button>
+        <button type="submit" className="lux-btn w-full">Sign Up</button>
       </form>
     </div>
   );
