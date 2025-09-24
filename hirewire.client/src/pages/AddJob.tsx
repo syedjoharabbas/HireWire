@@ -3,21 +3,46 @@ import { addJob } from '../services/JobService';
 import { getCandidates } from '../services/CandidateService';
 import { useNavigate } from 'react-router-dom';
 import { JobStatus } from '../types/Job';
+import { Input, Select, Textarea } from '../components/FormControls';
+import { useToast } from '../components/Toast';
+
+type FormDataType = {
+    title: string;
+    company: string;
+    location: string;
+    status: JobStatus;
+    salary: string;
+    notes: string;
+    contactName: string;
+    contactEmail: string;
+    nextSteps: string;
+    dateApplied: string;
+    candidateId?: number | undefined;
+};
+
+const DRAFT_KEY = 'addJobDraft';
 
 const AddJob: React.FC = () => {
     const navigate = useNavigate();
-    const [formData, setFormData] = useState({
-        title: '',
-        company: '',
-        location: '',
-        status: 'Applied' as JobStatus,
-        salary: '',
-        notes: '',
-        contactName: '',
-        contactEmail: '',
-        nextSteps: '',
-        dateApplied: new Date().toISOString().split('T')[0],
-        candidateId: undefined as number | undefined
+    const toast = useToast();
+    const [formData, setFormData] = useState<FormDataType>(() => {
+        try {
+            const raw = localStorage.getItem(DRAFT_KEY);
+            if (raw) return JSON.parse(raw) as FormDataType;
+        } catch {}
+        return {
+            title: '',
+            company: '',
+            location: '',
+            status: 'Applied' as JobStatus,
+            salary: '',
+            notes: '',
+            contactName: '',
+            contactEmail: '',
+            nextSteps: '',
+            dateApplied: new Date().toISOString().split('T')[0],
+            candidateId: undefined
+        } as FormDataType;
     });
 
     const [candidates, setCandidates] = useState<Array<any>>([]);
@@ -33,7 +58,11 @@ const AddJob: React.FC = () => {
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
         const { name, value } = e.target;
-        setFormData(prev => ({ ...prev, [name]: value }));
+        setFormData(prev => {
+            const next = ({ ...prev, [name]: value });
+            try { localStorage.setItem(DRAFT_KEY, JSON.stringify(next)); } catch {}
+            return next;
+        });
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -42,8 +71,14 @@ const AddJob: React.FC = () => {
             ...formData,
             lastUpdated: new Date().toISOString().split('T')[0]
         };
-        await addJob(jobData as any);
-        navigate('/jobs');
+        try {
+            await addJob(jobData as any);
+            try { localStorage.removeItem(DRAFT_KEY); } catch {}
+            toast.push('Job saved', 'success');
+            navigate('/jobs');
+        } catch (err: any) {
+            toast.push(err?.message || 'Failed to save job', 'error');
+        }
     };
 
     return (
@@ -56,21 +91,20 @@ const AddJob: React.FC = () => {
                 </div>
             </div>
 
-            <form onSubmit={handleSubmit} className="bg-white shadow-sm ring-1 ring-gray-900/5 rounded-xl">
+            <form onSubmit={handleSubmit} className="lux-card">
                 <div className="p-6">
                     <div className="grid grid-cols-1 gap-x-6 gap-y-4 sm:grid-cols-6">
                         <div className="sm:col-span-3">
                             <label htmlFor="title" className="block text-sm font-medium leading-6 text-gray-900">
                                 Job Title
                             </label>
-                            <input
+                            <Input
                                 type="text"
                                 name="title"
                                 id="title"
                                 value={formData.title}
                                 onChange={handleChange}
                                 required
-                                className="mt-2 block w-full rounded-md border-0 py-1.5 px-3 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-primary-600 sm:text-sm sm:leading-6"
                             />
                         </div>
 
@@ -78,14 +112,13 @@ const AddJob: React.FC = () => {
                             <label htmlFor="company" className="block text-sm font-medium leading-6 text-gray-900">
                                 Company Name
                             </label>
-                            <input
+                            <Input
                                 type="text"
                                 name="company"
                                 id="company"
                                 value={formData.company}
                                 onChange={handleChange}
                                 required
-                                className="mt-2 block w-full rounded-md border-0 py-1.5 px-3 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-primary-600 sm:text-sm sm:leading-6"
                             />
                         </div>
 
@@ -93,14 +126,13 @@ const AddJob: React.FC = () => {
                             <label htmlFor="location" className="block text-sm font-medium leading-6 text-gray-900">
                                 Location
                             </label>
-                            <input
+                            <Input
                                 type="text"
                                 name="location"
                                 id="location"
                                 value={formData.location}
                                 onChange={handleChange}
                                 required
-                                className="mt-2 block w-full rounded-md border-0 py-1.5 px-3 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-primary-600 sm:text-sm sm:leading-6"
                             />
                         </div>
 
@@ -108,41 +140,39 @@ const AddJob: React.FC = () => {
                             <label htmlFor="status" className="block text-sm font-medium leading-6 text-gray-900">
                                 Application Status
                             </label>
-                            <select
+                            <Select
                                 name="status"
                                 id="status"
                                 value={formData.status}
                                 onChange={handleChange}
                                 required
-                                className="mt-2 block w-full rounded-md border-0 py-1.5 px-3 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-primary-600 sm:text-sm sm:leading-6"
                             >
                                 <option value="Applied">Applied</option>
                                 <option value="Interview">Interview</option>
                                 <option value="Offer">Offer</option>
                                 <option value="Rejected">Rejected</option>
-                            </select>
+                            </Select>
                         </div>
 
                         <div className="sm:col-span-6">
                             <label htmlFor="candidateId" className="block text-sm font-medium leading-6 text-gray-900">Candidate (optional)</label>
-                            <select name="candidateId" id="candidateId" value={formData.candidateId ?? ''} onChange={handleChange} className="mt-2 block w-full rounded-md border-0 py-1.5 px-3 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300">
+                            <Select name="candidateId" id="candidateId" value={formData.candidateId ?? ''} onChange={handleChange}>
                                 <option value="">-- Select candidate --</option>
                                 {candidates.map(c => <option key={c.id} value={c.id}>{c.fullName}</option>)}
-                            </select>
+                            </Select>
                         </div>
 
                         <div className="sm:col-span-3">
                             <label htmlFor="salary" className="block text-sm font-medium leading-6 text-gray-900">
                                 Salary Range
                             </label>
-                            <input
+                            <Input
                                 type="text"
                                 name="salary"
                                 id="salary"
                                 value={formData.salary}
                                 onChange={handleChange}
                                 placeholder="e.g., $80,000 - $100,000"
-                                className="mt-2 block w-full rounded-md border-0 py-1.5 px-3 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-primary-600 sm:text-sm sm:leading-6"
                             />
                         </div>
 
@@ -150,14 +180,13 @@ const AddJob: React.FC = () => {
                             <label htmlFor="dateApplied" className="block text-sm font-medium leading-6 text-gray-900">
                                 Date Applied
                             </label>
-                            <input
+                            <Input
                                 type="date"
                                 name="dateApplied"
                                 id="dateApplied"
                                 value={formData.dateApplied}
                                 onChange={handleChange}
                                 required
-                                className="mt-2 block w-full rounded-md border-0 py-1.5 px-3 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-primary-600 sm:text-sm sm:leading-6"
                             />
                         </div>
 
@@ -165,13 +194,12 @@ const AddJob: React.FC = () => {
                             <label htmlFor="contactName" className="block text-sm font-medium leading-6 text-gray-900">
                                 Contact Name
                             </label>
-                            <input
+                            <Input
                                 type="text"
                                 name="contactName"
                                 id="contactName"
                                 value={formData.contactName}
                                 onChange={handleChange}
-                                className="mt-2 block w-full rounded-md border-0 py-1.5 px-3 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-primary-600 sm:text-sm sm:leading-6"
                             />
                         </div>
 
@@ -179,13 +207,12 @@ const AddJob: React.FC = () => {
                             <label htmlFor="contactEmail" className="block text-sm font-medium leading-6 text-gray-900">
                                 Contact Email
                             </label>
-                            <input
+                            <Input
                                 type="email"
                                 name="contactEmail"
                                 id="contactEmail"
                                 value={formData.contactEmail}
                                 onChange={handleChange}
-                                className="mt-2 block w-full rounded-md border-0 py-1.5 px-3 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-primary-600 sm:text-sm sm:leading-6"
                             />
                         </div>
 
@@ -193,13 +220,12 @@ const AddJob: React.FC = () => {
                             <label htmlFor="notes" className="block text-sm font-medium leading-6 text-gray-900">
                                 Notes
                             </label>
-                            <textarea
+                            <Textarea
                                 name="notes"
                                 id="notes"
                                 rows={3}
                                 value={formData.notes}
                                 onChange={handleChange}
-                                className="mt-2 block w-full rounded-md border-0 py-1.5 px-3 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-primary-600 sm:text-sm sm:leading-6"
                             />
                         </div>
 
@@ -207,14 +233,13 @@ const AddJob: React.FC = () => {
                             <label htmlFor="nextSteps" className="block text-sm font-medium leading-6 text-gray-900">
                                 Next Steps
                             </label>
-                            <input
+                            <Input
                                 type="text"
                                 name="nextSteps"
                                 id="nextSteps"
                                 value={formData.nextSteps}
                                 onChange={handleChange}
                                 placeholder="e.g., Follow up next week, Technical interview scheduled"
-                                className="mt-2 block w-full rounded-md border-0 py-1.5 px-3 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-primary-600 sm:text-sm sm:leading-6"
                             />
                         </div>
                     </div>
@@ -222,14 +247,14 @@ const AddJob: React.FC = () => {
                 <div className="flex items-center justify-end gap-x-6 border-t border-gray-900/10 px-4 py-4 sm:px-8">
                     <button
                         type="button"
-                        onClick={() => navigate('/jobs')}
+                        onClick={() => { try { localStorage.removeItem(DRAFT_KEY); } catch {} navigate('/jobs'); }}
                         className="text-sm font-semibold leading-6 text-gray-900"
                     >
                         Cancel
                     </button>
                     <button
                         type="submit"
-                        className="rounded-md bg-primary-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-primary-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-600"
+                        className="lux-btn px-3 py-2 text-sm font-semibold"
                     >
                         Save Job Application
                     </button>

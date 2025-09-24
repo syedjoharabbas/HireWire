@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { loginUser } from '../services/JobService';
+import { Input } from '../components/FormControls';
+import { useToast } from '../components/Toast';
 
 const Login: React.FC = () => {
   const [username, setUsername] = useState('');
@@ -9,6 +11,7 @@ const Login: React.FC = () => {
   const [error, setError] = useState('');
   const { login, isAuthenticated } = useAuth();
   const navigate = useNavigate();
+  const toast = useToast();
 
   useEffect(() => {
     if (isAuthenticated) {
@@ -27,9 +30,11 @@ const Login: React.FC = () => {
       const id = (result as any)?.id ?? null;
 
       login(token, role || 'User', id);
+      toast.push('Logged in', 'success');
       navigate('/');
     } catch (err) {
       setError('Invalid username or password');
+      toast.push('Invalid username or password', 'error');
     }
   };
 
@@ -40,27 +45,25 @@ const Login: React.FC = () => {
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
           <label htmlFor="username" className="block mb-1">Username</label>
-          <input
+          <Input
             type="text"
             id="username"
             value={username}
             onChange={(e) => setUsername(e.target.value)}
-            className="w-full border border-gray-300 rounded px-3 py-2"
             required
           />
         </div>
         <div>
           <label htmlFor="password" className="block mb-1">Password</label>
-          <input
+          <Input
             type="password"
             id="password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            className="w-full border border-gray-300 rounded px-3 py-2"
             required
           />
         </div>
-        <button type="submit" className="btn btn-primary w-full">Login</button>
+        <button type="submit" className="lux-btn w-full">Login</button>
       </form>
     </div>
   );

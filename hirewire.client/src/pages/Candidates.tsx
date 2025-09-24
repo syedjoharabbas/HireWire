@@ -2,6 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { getCandidates, createCandidate, uploadResume } from '../services/CandidateService';
 import { useAuth } from '../context/AuthContext';
 import ResumeViewer from '../components/ResumeViewer';
+import { useToast } from '../components/Toast';
+import { Input } from '../components/FormControls';
 
 // Ensure this matches the server address
 const API_BASE = 'http://localhost:5035';
@@ -21,6 +23,7 @@ const Candidates: React.FC = () => {
   const [phone, setPhone] = useState('');
   const { isAdmin } = useAuth();
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const toast = useToast();
 
   const load = async () => {
     setLoading(true);
@@ -41,26 +44,26 @@ const Candidates: React.FC = () => {
   useEffect(() => { load(); }, []);
 
   const handleCreate = async () => {
-    if (!fullName.trim()) return alert('Name required');
+    if (!fullName.trim()) return toast.push('Name required', 'error');
     try {
       await createCandidate({ fullName, email, phone });
       setFullName(''); setEmail(''); setPhone('');
+      toast.push('Candidate created', 'success');
       await load();
     } catch (err: any) {
-      alert(err?.message || 'Failed to create candidate');
+      toast.push(err?.message || 'Failed to create candidate', 'error');
     }
   };
 
   const handleUpload = async (id: number, file: File | null) => {
-    if (!file) return alert('Select a file first');
+    if (!file) return toast.push('Select a file first', 'error');
     try {
       const res = await uploadResume(id, file);
-      // server returns absolute url; normalize just in case
       const url = resolveResumeUrl(res?.url ?? null);
-      alert('Uploaded: ' + url);
+      toast.push('Uploaded resume', 'success');
       await load();
     } catch (err: any) {
-      alert(err?.message || 'Upload failed');
+      toast.push(err?.message || 'Upload failed', 'error');
     }
   };
 
@@ -68,12 +71,18 @@ const Candidates: React.FC = () => {
     <div className="space-y-6">
       <h2 className="text-2xl font-bold">Candidates</h2>
 
-      <div className="bg-white p-4 rounded shadow grid grid-cols-1 sm:grid-cols-4 gap-3">
-        <input className="input col-span-1 sm:col-span-1" placeholder="Full name" value={fullName} onChange={e => setFullName(e.target.value)} />
-        <input className="input col-span-1 sm:col-span-1" placeholder="Email" value={email} onChange={e => setEmail(e.target.value)} />
-        <input className="input col-span-1 sm:col-span-1" placeholder="Phone" value={phone} onChange={e => setPhone(e.target.value)} />
-        <div className="col-span-1 sm:col-span-1 flex items-center">
-          <button onClick={handleCreate} className="btn btn-primary w-full">Create</button>
+      <div className="lux-card grid grid-cols-1 sm:grid-cols-4 gap-3">
+        <div className="p-4">
+          <Input className="col-span-1 sm:col-span-1" placeholder="Full name" value={fullName} onChange={e => setFullName(e.target.value)} />
+        </div>
+        <div className="p-4">
+          <Input className="col-span-1 sm:col-span-1" placeholder="Email" value={email} onChange={e => setEmail(e.target.value)} />
+        </div>
+        <div className="p-4">
+          <Input className="col-span-1 sm:col-span-1" placeholder="Phone" value={phone} onChange={e => setPhone(e.target.value)} />
+        </div>
+        <div className="p-4 flex items-center">
+          <button onClick={handleCreate} className="lux-btn w-full">Create</button>
         </div>
       </div>
 
@@ -112,7 +121,7 @@ const Candidates: React.FC = () => {
                       const file = input?.files?.[0] ?? null;
                       handleUpload(c.id, file);
                     }}
-                    className="btn btn-secondary"
+                    className="lux-btn-secondary"
                   >
                     Upload
                   </button>
