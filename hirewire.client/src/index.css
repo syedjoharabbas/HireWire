@@ -15,8 +15,10 @@
 }
 
 @layer components {
+  .transition-smooth { transition: all 180ms cubic-bezier(.2,.8,.2,1); }
+
   .lux-card {
-    @apply bg-white dark:bg-neutralGlass-800 rounded-xl-2 p-6 shadow-lux-1 transition-smooth;
+    @apply bg-white dark:bg-neutralGlass-800 rounded-xl p-6 shadow-lux-1 transition-smooth;
     background-image: linear-gradient(180deg, rgba(255,255,255,0.6), rgba(255,255,255,0.2));
     backdrop-filter: blur(6px) saturate(120%);
   }
@@ -28,6 +30,7 @@
     box-shadow: 0 8px 30px rgba(14, 20, 56, 0.12);
   }
   .lux-btn-secondary { @apply bg-neutralGlass-100 dark:bg-neutralGlass-700 text-gray-900 dark:text-gray-100; }
+  .lux-btn-small { @apply px-3 py-1 rounded-md bg-primary-600 text-white; }
 
   .glass-input { @apply w-full px-3 py-2 rounded-md border-0 ring-1 ring-inset ring-neutralGlass-200 dark:ring-neutralGlass-700 bg-white/60 dark:bg-neutralGlass-900/60 text-gray-900 dark:text-gray-100; }
 
